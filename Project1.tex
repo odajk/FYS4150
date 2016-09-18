@@ -1,0 +1,108 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\begin{document}
+\title{Project 1}
+\maketitle
+
+\subtitle{Introduction}
+
+In this project we want to solve the one-dimensional Poisson equation with Dirichlet boundary conditions. 
+
+The Poisson equation  in its general form is a  partial differential equation that describes many physical systems. 
+
+In this project we will look at different ways of solving the one dimensional Poisson-equation numerically, and find out which numerical method that is the most efficient in terms of computer power needed. 
+
+The general one-dimensional Poisson equation is given by 
+\begin{equation}
+-u''(x) = f(x)
+\end{equation}
+We want to solve this equation with respect to $u$ on the interval $x \in [0,1]$ and with boundary conditions $u(0) = u(1) = 0$
+
+We are given $f  = 100e^-10x$ 
+
+We  approximate the second
+derivative of $u$ with 
+
+
+\[
+   -\frac{v_{i+1}+v_{i-1}-2v_i}{h^2} = f_i  \hspace{0.5cm} \mathrm{for} \hspace{0.1cm} i=1,\dots, n,
+\]
+where $f_i=f(x_i)$.
+
+
+
+If $v$ is a vector on the form 
+
+
+We can rewrite this as a set of equations on the form \[
+   {\bf A}{\bf v} = \tilde{{\bf b}},
+\]
+
+where ${\bf A}$ is an $n\times n$  tridiagonal matrix which we rewrite as 
+\begin{equation}
+    {\bf A} = \left(\begin{array}{cccccc}
+                           2& -1& 0 &\dots   & \dots &0 \\
+                           -1 & 2 & -1 &0 &\dots &\dots \\
+                           0&-1 &2 & -1 & 0 & \dots \\
+                           & \dots   & \dots &\dots   &\dots & \dots \\
+                           0&\dots   &  &-1 &2& -1 \\
+                           0&\dots    &  & 0  &-1 & 2 \\
+                      \end{array} \right),
+\end{equation}
+and $\tilde{b}_i=h^2f_i$.
+
+\begin{equation*}
+v = 
+
+\left(\begin{array}{c}
+                           v_1\\
+                           v_2\\
+                           \dots \\
+                          \dots  \\
+                          \dots \\
+                           v_n\\
+                      \end{array} \right)
+\end{equation}
+
+We see that multiplying this vector with the matrix $A$ gives us the equations for $f_i$ multiplied with $h^2$
+
+
+
+
+
+We start by looking at a more general case, with a tridiagonal  matrix 
+
+\begin{equation}
+    {\bf A} = \left(\begin{array}{cccccc}
+                           b_1& c_1 & 0 &\dots   & \dots &\dots \\
+                           a_1 & b_2 & c_2 &\dots &\dots &\dots \\
+                           & a_2 & b_3 & c_3 & \dots & \dots \\
+                           & \dots   & \dots &\dots   &\dots & \dots \\
+                           &   &  &a_{n-2}  &b_{n-1}& c_{n-1} \\
+                           &    &  &   &a_{n-1} & b_n \\
+                      \end{array} \right)\left(\begin{array}{c}
+                           v_1\\
+                           v_2\\
+                           \dots \\
+                          \dots  \\
+                          \dots \\
+                           v_n\\
+                      \end{array} \right)
+  =\left(\begin{array}{c}
+                           \tilde{b}_1\\
+                           \tilde{b}_2\\
+                           \dots \\
+                           \dots \\
+                          \dots \\
+                           \tilde{b}_n\\
+                      \end{array} \right).
+ \end{equation}            
+ 
+   First, we want to develop a general algorithm that solves for $v$ given any tridiagonal matrix. 
+   
+   
+Next, we use the fact that the matrix has identical matrix elements along the diagonal and identical values for the non-diagonal elements. 
+ 
+\end{document}
+
+ 
