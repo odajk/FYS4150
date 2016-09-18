@@ -1,16 +1,28 @@
 \documentclass[12pt]{article}
 \usepackage{amsmath}
+\usepackage{listings}
 \begin{document}
 \title{Project 1}
 \maketitle
 
-\subtitle{Introduction}
+\subsection{Introduction}
 
-In this project we want to solve the one-dimensional Poisson equation with Dirichlet boundary conditions. 
+In this project we want to solve the one-dimensional Poisson equation with Dirichlet boundary conditions, using numerical methods. We want to find out how we can reduce the number of floating point operations, and so reduce the computation time, using more specialized  algorithms.  
 
-The Poisson equation  in its general form is a  partial differential equation that describes many physical systems. 
+We will compare three different methods for solving the Poisson equation, first an algorithm that solves the set of equations given any tridiagonal matrix. Then we use a method that is specialized to our specific case. Lastly we use the method of LU-decomposition. 
 
-In this project we will look at different ways of solving the one dimensional Poisson-equation numerically, and find out which numerical method that is the most efficient in terms of computer power needed. 
+The Poisson equation in its general form is a  partial differential equation that describes many physical systems, amongst others it is an important equation in the field of electrostatics.
+
+In this project we are working with a problem that has an analytical solution, although that is not always the case for the Poisson equation. 
+
+The fact that we have an analytical solution makes it possible to check that the numerical results are actually correct. 
+
+
+
+\subsection{Methods}
+
+
+
 
 The general one-dimensional Poisson equation is given by 
 \begin{equation}
@@ -18,7 +30,8 @@ The general one-dimensional Poisson equation is given by
 \end{equation}
 We want to solve this equation with respect to $u$ on the interval $x \in [0,1]$ and with boundary conditions $u(0) = u(1) = 0$
 
-We are given $f  = 100e^-10x$ 
+We are given the source term $f  = 100e^{(-10x)}$. Then the above differential equation
+has a closed-form  solution given by $u(x) = 1-(1-e^{-10})x-e^{-10x}$
 
 We  approximate the second
 derivative of $u$ with 
@@ -67,9 +80,6 @@ v =
 We see that multiplying this vector with the matrix $A$ gives us the equations for $f_i$ multiplied with $h^2$
 
 
-
-
-
 We start by looking at a more general case, with a tridiagonal  matrix 
 
 \begin{equation}
@@ -98,10 +108,34 @@ We start by looking at a more general case, with a tridiagonal  matrix
                       \end{array} \right).
  \end{equation}            
  
-   First, we want to develop a general algorithm that solves for $v$ given any tridiagonal matrix. 
    
+ First, we want to develop a general algorithm that solves for $v$ given any tridiagonal matrix, with any diagonal elements $a_i, b_i, c_i$ 
+ 
+Arrays of length $N+2$ are initialized, one array for $a$-values one for the $b$-values, and one for the $c$-values. 
+
+An array of $x$-values is also initialized, with values ranging from 0 to 1, with step length $h$ The step length is calculated by $h = \frac{1}{N+1}$
+
+
    
-Next, we use the fact that the matrix has identical matrix elements along the diagonal and identical values for the non-diagonal elements. 
+ \begin{lstlisting}
+  for(int i = 2; i < N +2; i++){
+            M[i] = M[i] - (B[i] * A[i-1])/M[i-1];
+            F[i] = F[i] - (B[i] * F[i-1])/M[i-1];
+        }
+ 
+        U[N] = F[N]/M[N];
+ 
+        for(int i = N -1 ; i > 1; i--){
+            U[i] = (F[i] -  A[i] * U[i +1])/M[i] ;
+        }
+\end{lstlisting}
+ 
+
+   
+
+
+  
+Next, the fact that the matrix has identical matrix elements along the diagonal and identical values for the non-diagonal elements is used. 
  
 \end{document}
 
