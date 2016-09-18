@@ -1,6 +1,7 @@
 \documentclass[12pt]{article}
 \usepackage{amsmath}
 \usepackage{listings}
+\lstset{language=C++}
 \begin{document}
 \title{Project 1}
 \maketitle
@@ -17,41 +18,24 @@ In this project we are working with a problem that has an analytical solution, a
 
 The fact that we have an analytical solution makes it possible to check that the numerical results are actually correct. 
 
-
-
 \subsection{Methods}
-
-
-
-
 The general one-dimensional Poisson equation is given by 
 \begin{equation}
 -u''(x) = f(x)
 \end{equation}
 We want to solve this equation with respect to $u$ on the interval $x \in [0,1]$ and with boundary conditions $u(0) = u(1) = 0$
-
 We are given the source term $f  = 100e^{(-10x)}$. Then the above differential equation
 has a closed-form  solution given by $u(x) = 1-(1-e^{-10})x-e^{-10x}$
-
 We  approximate the second
 derivative of $u$ with 
-
-
 \[
    -\frac{v_{i+1}+v_{i-1}-2v_i}{h^2} = f_i  \hspace{0.5cm} \mathrm{for} \hspace{0.1cm} i=1,\dots, n,
 \]
 where $f_i=f(x_i)$.
-
-
-
-If $v$ is a vector on the form 
-
-
 We can rewrite this as a set of equations on the form \[
    {\bf A}{\bf v} = \tilde{{\bf b}},
 \]
-
-where ${\bf A}$ is an $n\times n$  tridiagonal matrix which we rewrite as 
+where ${\bf A}$ is an $n\times n$  tridiagonal matrix which we write as 
 \begin{equation}
     {\bf A} = \left(\begin{array}{cccccc}
                            2& -1& 0 &\dots   & \dots &0 \\
@@ -63,23 +47,38 @@ where ${\bf A}$ is an $n\times n$  tridiagonal matrix which we rewrite as
                       \end{array} \right),
 \end{equation}
 and $\tilde{b}_i=h^2f_i$.
+\\
+
+This gives the following set:
+
+\begin{align*}
+2v_1 - v_2 &= \mathbf{\tilde{b}_1} \\
+-v_1 + 2v_2 - v_3 &= \mathbf{\tilde{b}_2} \\
+-v_2 + 2v_3 - v_4 &= \mathbf{\tilde{b}_3} \\
+ &\vdots  \\
+-v_{n-2} + 2v_{n-1} - v_{n} &= \mathbf{\tilde{b}_{n-1}}
+\end{align*}
+
+
+From this a general expression can be derived:
+
 
 \begin{equation*}
-v = 
-
-\left(\begin{array}{c}
-                           v_1\\
-                           v_2\\
-                           \dots \\
-                          \dots  \\
-                          \dots \\
-                           v_n\\
-                      \end{array} \right)
-\end{equation}
-
-We see that multiplying this vector with the matrix $A$ gives us the equations for $f_i$ multiplied with $h^2$
+-v_{i-1} + 2v_{i} - v_{i+1} = \mathbf{\tilde{b_i}} 
+\end{equation*}
 
 
+Substituting for $\mathbf{\tilde{b}_i}$ gives:
+
+
+\begin{align*}
+-v_{i-1} + 2v_{i} - v_{i+1} &= f_ih^2 \\
+-\frac{(v_{i-1} - 2v_{i} + v_{i+1})}{h^2} &= f_i 
+\end{align*}
+
+\begin{equation*}
+\end{equation*}
+%We see that multiplying this vector with the matrix $A$ gives us %the equations for $f_i$ multiplied with $h^2$. 
 We start by looking at a more general case, with a tridiagonal  matrix 
 
 \begin{equation}
@@ -109,15 +108,13 @@ We start by looking at a more general case, with a tridiagonal  matrix
  \end{equation}            
  
    
- First, we want to develop a general algorithm that solves for $v$ given any tridiagonal matrix, with any diagonal elements $a_i, b_i, c_i$ 
- 
-Arrays of length $N+2$ are initialized, one array for $a$-values one for the $b$-values, and one for the $c$-values. 
+ First, we want to develop a general algorithm that solves for $v$ given any tridiagonal matrix, with any diagonal elements $a_i, b_i, c_i$ \\
+Arrays of length $N+2$ are initialized, one array for $a$-values one for the $b$-values, and one for the $c$-values. \\
 
-An array of $x$-values is also initialized, with values ranging from 0 to 1, with step length $h$ The step length is calculated by $h = \frac{1}{N+1}$
+An array of $x$-values is also initialized, with $x\in[0,1]$, and step length $$h=\frac{1}{N+1}$$. \\
 
-
-   
- \begin{lstlisting}
+The algorithm for the forward and backward substitution was implemented as follows: 
+ \begin{lstlisting}[frame=single]
   for(int i = 2; i < N +2; i++){
             M[i] = M[i] - (B[i] * A[i-1])/M[i-1];
             F[i] = F[i] - (B[i] * F[i-1])/M[i-1];
@@ -129,13 +126,12 @@ An array of $x$-values is also initialized, with values ranging from 0 to 1, wit
             U[i] = (F[i] -  A[i] * U[i +1])/M[i] ;
         }
 \end{lstlisting}
- 
 
-   
+Here, $M$ is the array containing elements of the diagonal, $A$ is the vector containing  elements in the upper diagonal, and $B$ is the array containing  elements in the lower diagonal. The $F$ array is the array containing source term values, $f(x)$.
 
+This algorithm will solve any set of equations that can be written as a product of a any tridiagonal matrix and a vector. However, for the matrix specific to this project, the elements along the diagonal are all identical, and the non diagonal elements are also all identical. This allows for developing a more efficient algorithm. 
 
   
-Next, the fact that the matrix has identical matrix elements along the diagonal and identical values for the non-diagonal elements is used. 
  
 \end{document}
 
