@@ -1,0 +1,332 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{commath}
+
+\lstset{language=C++}
+\begin{document}
+\title{Project 1}
+\maketitle
+
+\section{Introduction}
+
+In this project we want to solve the one-dimensional Poisson equation with Dirichlet boundary conditions, using numerical methods. We want to find out how we can reduce the number of floating point operations, and so reduce the computation time, using more specialized  algorithms. We will compare three different methods for solving the Poisson equation, first an algorithm that solves the set of equations given any tridiagonal matrix. Then we use a method that is specialized to our specific case. Lastly we use the method of LU-decomposition. The Poisson equation in its general form is a  partial differential equation that describes many physical systems, amongst others it is an important equation in the field of electrostatics. In this project we are working with a problem that has an analytical solution, although that is not always the case for the Poisson equation.  The fact that we have an analytical solution makes it possible to check that the numerical results are actually correct. 
+
+\section{Methods}\label{sec:meth}
+The general one-dimensional Poisson equation is given by 
+\begin{equation}
+-u''(x) = f(x)
+\end{equation}
+We want to solve this equation with respect to $u$ on the interval $x \in [0,1]$ and with boundary conditions $u(0) = u(1) = 0$
+\noindent We are given the source term 
+\begin{equation}\label{eq:source}
+f  = 100e^{(-10x)}. 
+\end{equation}
+
+\noindent Then the above differential equation has a closed-form  solution given by 
+
+\begin{equation}\label{eq:closed}
+u(x) = 1-(1-e^{-10})x-e^{-10x}
+\end{equation}
+
+\noindent We  approximate the second derivative of $u$ with 
+\begin{equation}\label{eq:sec_der}
+   -\frac{v_{i+1}+v_{i-1}-2v_i}{h^2} = f_i  \hspace{0.5cm} \mathrm{for} \hspace{0.1cm} i=1,\dots, n,
+\end{equation}
+
+\noindent where $f_i=f(x_i)$.
+We can rewrite this as a set of equations on the form 
+\begin{equation}\label{eq:lin_eq}
+   {\bf A}{\bf v} = \tilde{{\bf b}},
+\end{equation}
+
+\noindent where ${\bf A}$ is an $n\times n$  tridiagonal matrix which we write as 
+\begin{equation}
+    {\bf A} = \left(\begin{array}{cccccc}
+                           2& -1& 0 &\dots   & \dots &0 \\
+                           -1 & 2 & -1 &0 &\dots &\dots \\
+                           0&-1 &2 & -1 & 0 & \dots \\
+                           & \dots   & \dots &\dots   &\dots & \dots \\
+                           0&\dots   &  &-1 &2& -1 \\
+                           0&\dots    &  & 0  &-1 & 2 \\
+                      \end{array} \right),
+\end{equation}
+and $\tilde{b}_i=h^2f_i$.
+\\
+
+\noindent This gives the following set:
+
+\begin{align*}
+2v_1 - v_2 &= \mathbf{\tilde{b}_1} \\
+-v_1 + 2v_2 - v_3 &= \mathbf{\tilde{b}_2} \\
+-v_2 + 2v_3 - v_4 &= \mathbf{\tilde{b}_3} \\
+ &\vdots  \\
+-v_{n-2} + 2v_{n-1} - v_{n} &= \mathbf{\tilde{b}_{n-1}}
+\end{align*}
+
+
+\noindent From this a general expression can be derived:
+
+
+\begin{equation*}
+-v_{i-1} + 2v_{i} - v_{i+1} = \mathbf{\tilde{b_i}} 
+\end{equation*}
+
+
+\noindent Substituting for $\mathbf{\tilde{b}_i}$ gives:
+
+
+\begin{align*}
+-v_{i-1} + 2v_{i} - v_{i+1} &= f_ih^2 \\
+-\frac{(v_{i-1} - 2v_{i} + v_{i+1})}{h^2} &= f_i 
+\end{align*}
+
+\begin{equation*}
+\end{equation*}
+%We see that multiplying this vector with the matrix $A$ gives us %the equations for $f_i$ multiplied with $h^2$. 
+
+\subsection{Numerical error and floating point operations}
+
+A central point of this project is to evaluate the number of floating point operations (FLOPS) as well as the numerical error of the methods. A useful measure of the numerical error of the method is given by the \textsc{relative error}, $\epsilon_r$, given by it's logarithm as:
+
+\begin{equation}\label{eq:eps}
+\log{\epsilon_r} = \abs{\frac{u_i - v_i}{u_i}}
+\end{equation}
+
+\noindent Counting FLOPS is a rather trivial exercise in our case where it requires only to count the number of mathematical operations per expression and total them up for both the forward and backward substitutions. 
+\subsection{The general tridiagonal matrix}
+
+Let A be  given as an ordinary tridiagonal matrix on the form: 
+
+\begin{equation}
+    {\bf A} = \left(\begin{array}{cccccc}
+                           b_1& c_1 & 0 &\dots   & \dots &\dots \\
+                           a_1 & b_2 & c_2 &\dots &\dots &\dots \\
+                           & a_2 & b_3 & c_3 & \dots & \dots \\
+                           & \dots   & \dots &\dots   &\dots & \dots \\
+                           &   &  &a_{n-2}  &b_{n-1}& c_{n-1} \\
+                           &    &  &   &a_{n-1} & b_n \\
+                      \end{array} \right)\left(\begin{array}{c}
+                           v_1\\
+                           v_2\\
+                           \dots \\
+                          \dots  \\
+                          \dots \\
+                           v_n\\
+                      \end{array} \right)
+  =\left(\begin{array}{c}
+                           \tilde{b}_1\\
+                           \tilde{b}_2\\
+                           \dots \\
+                           \dots \\
+                          \dots \\
+                           \tilde{b}_n\\
+                      \end{array} \right).
+ \end{equation}            
+ 
+   
+\noindent First, we want to develop a general algorithm that solves for $v$ given any tridiagonal matrix, with any diagonal elements $a_i, b_i, c_i$ \\
+
+\subsubsection{Solution for the linear equation}
+A widely used method for solving systems of linear equations is gaussian elimination
+(row reduction). The first step is a forward substitution, performed as follows.
+\[
+\begin{bmatrix}
+b_1 & c_1 & 0 & 0 \\ a_1 & b_2 & c_2 & 0 \\ 0 & a_2 & b_3 & c_3 \\ 0 & 0 & a_3 & b_4
+\end{bmatrix}
+\begin{matrix}
+~ \\ \xrightarrow{R_2-\frac{a_1}{b_1}R_1}
+\end{matrix}
+\begin{bmatrix}
+b_1 & c_1 & 0 & 0 \\ 0 & \tilde{b}_2 & c_2 & 0 \\ 0 & a_2 & b_3 & c_3 \\ 0 & 0 & a_3 & b_4
+\end{bmatrix}
+\begin{matrix}
+~ \\ ~ \\ \xrightarrow{R_3-\frac{a_2}{\tilde{b}_2}R_3} 
+\end{matrix}
+\begin{bmatrix}
+b_1 & c_1 & 0 & 0 \\ 0 & \tilde{b}_2 & c_2 & 0 \\ 0 & 0 & \tilde{b}_3 & c_3 \\ 0 & 0 & a_3 & b_4
+\end{bmatrix}
+\]\[ % New matrix begins here
+\begin{matrix}
+~ \\ \xrightarrow{R_4-\frac{a_3}{\tilde{b}_3}R_4} 
+\end{matrix}
+\begin{bmatrix}
+b_1 & c_1 & 0 & 0 \\ 0 & \tilde{b}_2 & c_2 & 0 \\ 0 & 0 & \tilde{b}_3 & c_3 \\ 0 & 0 & 0 & \tilde{b}_4
+\end{bmatrix}
+\]
+
+\noindent Although this example uses only a $4x4$ matrix, the result can be generalized to any $nxn$ tridiagonal matrix.
+The elements along the diagonal of the resulting matrix are given by
+\begin{equation}\label{eq:diag-el}
+\tilde{b}_i = b_i - \frac{a_{i-1}c_{i-1}}{\tilde{b}_{i-1}}
+\end{equation}
+where $i \in [2,n]$. Note that the first row does not change.\\ \\
+Likewise, this operation must also be performed on the right-hand side of the equation, on
+$\mathbf{f}$. These operations give us a general expression for $\tilde{f}_i$:
+
+\begin{equation}\label{eq:f-el}
+\tilde{f}_i = f_i -\frac{a_{i-1}f_{i-1}}{b_{i-1}}
+\end{equation} \\
+
+\noindent Our equation $\mathbf{Av = f}$ now looks like this:
+
+\[
+\begin{bmatrix}
+b_1 & c_1 & 0 & 0 \\ 0 & \tilde{b}_2 & c_2 & 0 \\ 0 & 0 & \tilde{b}_3 & c_3 \\ 0 & 0 & 0 & \tilde{b}_4
+\end{bmatrix}
+\begin{bmatrix}
+v_1 \\ v_2 \\ v_3 \\ v_4
+\end{bmatrix} =
+\begin{bmatrix}
+f_1 \\ \tilde{f}_2 \\ \tilde{f}_3 \\ \tilde{f}_4
+\end{bmatrix}
+\]\\
+
+\noindent Backwards substitution now allows us to find a generalized expression for $v_i$.
+
+\begin{align*}
+v_4 &= \frac{\tilde{f}_4}{\tilde{b}_4} \\
+v_3 &= \tilde{f}_3 - \frac{c_3v_4}{\tilde{b}_3} \\
+v_2 &= \tilde{f}_2 - \frac{c_2v_3}{\tilde{b}_2} \\
+\end{align*} \\
+
+\noindent  From this a general expression for $v_i$ can be derived:
+\begin{equation}\label{eq:ui-general}
+v_i = \tilde{f}_i - \frac{c_iv_{i+1}}{\tilde{b}_i} \\
+\end{equation} \\
+
+\subsubsection{Implementing the algorithm}
+Arrays of length $N+2$ are initialized, one array for $a$-values one for the $b$-values, and one for the $c$-values. \\
+
+\noindent  An array of $x$-values is also initialized, with $x\in[0,1]$, and step length $$h=\frac{1}{N+1}$$. \\
+
+\noindent The algorithm for the forward and backward substitution was implemented as follows: 
+\begin{lstlisting}[frame=single]
+  for(int i = 2; i < N +2; i++){
+            M[i] = M[i] - (B[i] * A[i-1])/M[i-1];
+            F[i] = F[i] - (B[i] * F[i-1])/M[i-1];
+        }
+ 
+        U[N] = F[N]/M[N];
+ 
+        for(int i = N -1 ; i > 1; i--){
+            U[i] = (F[i] -  A[i] * U[i +1])/M[i] ;
+        }
+\end{lstlisting}
+
+\noindent  Here, $M$ is the array containing elements of the diagonal, $A$ is the vector containing  elements in the upper diagonal, and $B$ is the array containing  elements in the lower diagonal. The $F$ array is the array containing source term values, $f(x)$.
+
+\noindent This algorithm will solve any set of equations that can be written as a product of a any tridiagonal matrix and a vector. However, for the matrix specific to this project, the elements along the diagonal are all identical, and the non diagonal elements are also all identical. This allows for developing a more efficient algorithm. 
+
+
+\subsection{Specialized tridiagonal matrix}
+
+The efficiency of the general algorithm can be improved for this special case, since all the elements on the diagonal are identical and known $b_i =2$ and all the non-diagonal elements are identical and known, $a_i = c_i =-1$. 
+This can be used to reduce the number of floating point operations from the general algorithm, and so make the algorithm more efficient.
+Knowing that all the $a_i$s and $c_i$s equal -1 and all the $b_i$ equal 2, the forward substitution in  (\ref{eq:diag-el}) can be simplified to the following:
+
+\begin{equation}
+\tilde{b}_i = 2-\frac{1}{\tilde{b}_{i-1}}=\frac{i+1}{i}
+\end{equation}
+similarly, (\ref{eq:f-el}) can be simplified to 
+\begin{equation}
+
+\end{equation}
+
+
+
+
+
+\subsection{LU decomposition}
+
+\section{Results}
+
+
+Implementing the algorithms from \ref{sec:meth} into a C++ program and solving for n x n matrices with $n = 1e1, 1e2, ... , 1e8$ for comparisons of time. For the evolution of the plot only the first few sets have been included as the fuller sets show no visual improvement in accuracy. Figure \ref{fig:fig2} shows the convergence of the methods for higher resolutions of the discretized variable $x_i$. As expected the general and special methods show no deviation from eachother.  
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{ |c |c |c |}
+   \hline 
+   \hline
+   N & $ log(\epsilon_r)$ & CPU time [s]\\
+   \hline
+   10 & $-0.39$ & $1e-6$\\ 
+   100 & $-3.0$ & $4e-6 $\\  
+   1e3 & $-5.0$ & $2.7e-5$ \\
+   1e4 & $-7.0$ & $2.2e-4$ \\
+   1e5 & $-9.0$ & $0.02$ \\
+   1e8 & N/A & $2.27$ \\
+   \hline
+   \hline
+  \end{tabular} 
+  \caption{General algorithm}
+
+  \begin{tabular}{ |c |c |c |}
+   \hline
+   \hline
+   N & $log(\epsilon_r)$ & CPU time \\
+   \hline
+   10 & $-0.39$ & $1e-6$\\ 
+   100 & $-3.0$ & $3e-6 $\\  
+   1e3 & $-5.0$ & $1.9e-5$ \\
+   1e4 & $-7.0$ & $1.8e-4$ \\
+   1e5 & $-9.0$ & $0.019$ \\
+   1e8 & N/A & $1.79$ \\
+   \hline
+   \hline
+  \end{tabular} 
+  \caption{Special algorithm}
+  
+  \begin{tabular}{ |c |c |}
+   \hline
+   \hline
+   N & CPU time \\
+   \hline
+   10  & $7.3e-5$\\ 
+   1e2 & $4.4e-4$\\  
+   1e3 & $0.20$\\  
+   \hline
+   \hline
+  \end{tabular} 
+  \caption{LU decomposition}
+\end{table}
+
+
+\begin{figure}
+\begin{subfigure}{\linewidth}
+  \centering
+  \includegraphics[width= \linewidth]{figure_1.png}
+  \caption*{1a}
+  \label{fig:sfig11}
+\end{subfigure}%
+
+\begin{subfigure}{\linewidth}
+  \centering
+  \includegraphics[width= \linewidth]{figure_2.png}
+  \caption*{1b}
+  \label{fig:sfig12}
+\end{subfigure}
+\label{fig:fig1}
+\end{figure}
+
+\begin{figure}
+\begin{subfigure}{\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{figure_3.png}
+  \caption*{1c}
+  \label{fig:sfig21}
+\end{subfigure}%
+
+\caption{Plots of numerical methods approximating the exact solution for a poisson equation given the source such as in equation \ref{eq:source}}
+\label{fig:fig2}
+
+\end{figure}
+
+ 
+
+\section{Discussion}
+\end{document}
