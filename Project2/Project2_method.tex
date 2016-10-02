@@ -38,8 +38,9 @@ Furthermore, in a unitary transformation of a matrix equation, the eigenvalues a
 \subsection{Numerical implementation}
 
 
-The following block of code applies Jacobi's method as long as the number of iterations, put $N^3$, where $N$ is the dimension of the  matrices, and the maximum non-diagonal element is smaller than $\epsilon$. In this case $\epsilon = 10^{-8}$. 
+The following block of code applies Jacobi's method as long as the number of iterations is smaller than the maximum number of iterations and the maximum non-diagonal element is bigger than the tolerance, $\epsilon$. The maximum of iterations is put to $N^3$, where $N$ is the dimension of the matrices and $\epsilon = 10^{-8}$. 
 
+%git er dust
 \begin{lstlisting}
  while (num_iter <= max_iter && fabs(max) > epsilon)
         {
