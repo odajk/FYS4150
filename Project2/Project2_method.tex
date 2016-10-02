@@ -1,0 +1,94 @@
+\documentclass[12pt]{article}
+\usepackage{braket}
+\usepackage{amsmath}
+\usepackage{listings}
+\begin{document}
+\title{Project 2}
+\maketitle
+\section{Method}
+
+
+
+It can be shown that a unitary transformation of a vector conserves the dot product. 
+The dot product between two of the basis vectors can be written as:
+
+\begin{equation*}
+\mathbf{v}_i^T \mathbf{v}_i=  \delta_{ij}
+\end{equation*}
+New vectors $\mathbf{w}_i$ are created by a unitary transformation of the basis vectors $\mathbf{v}_i$ 
+\begin{equation*}
+\mathbf{w}_i = \mathbf{Uv}_i
+\end{equation*}
+The dot product between the new vectors will be:
+\begin{equation*}
+\mathbf{w}_i^T\mathbf{w}_j  = (\mathbf{U}\mathbf{v}_i)^T\mathbf{U}\mathbf{v}_j = \mathbf{v}_i^T\mathbf{U}^T\mathbf{U}\mathbf{v}_j
+\end{equation*}
+Since $\mathbf{U}$ is a unitary matrix, 
+\begin{equation*}
+\mathbf{U}^T\mathbf{U} = \mathbf{1}
+\end{equation*}
+And so:
+\begin{equation*}
+\mathbf{w}_i^T\mathbf{w}_j  = \mathbf{v}_i^T \mathbf{v}_i=  \delta_{ij}
+\end{equation*}
+Thus, it has been proven that the dot product, and so also the orthogonality is conserved when the basis vectors $\mathbf{v}_i$ are acted on by a unitary transformation matrix. 
+\\
+\\
+Furthermore, in a unitary transformation of a matrix equation, the eigenvalues are conserved, even though the eigenvectors are changed.  In Jacobi's method, a unitary transformation matrix transforms a matrix with arbitrary elements to a diagonal matrix, so after implementing Jacobi's method, it is easy to find the eigenvalues of the original equation. A more detailed explanation is given in the lecture notes of this course\footnote{Morten Hjorth-Jensen \textit{Computational Physics: Lecture Notes Fall 2015 }, 215-218} 
+\subsection{Numerical implementation}
+
+
+The following block of code applies Jacobi's method as long as the number of iterations, put $N^3$, where $N$ is the dimension of the  matrices, and the maximum non-diagonal element is smaller than $\epsilon$. In this case $\epsilon = 10^{-8}$. 
+
+\begin{lstlisting}
+ while (num_iter <= max_iter && fabs(max) > epsilon)
+        {
+            max = max_elem(&i, &j, A, N);
+            A = sim_transform(i, j, A, R,N);
+            num_iter++;
+        }
+\end{lstlisting}
+The \lstinline{max_elem}-function in the code above finds the maximum non-diagonal element of the matrix. As long as the absolute value of this element is not smaller than the tolerance, $\epsilon$, and the max number of iterations has not been reached, it will continue to loop, and calculate a new matrix using the \lstinline{sim_transform}-function. It is in this function that the Jacobi transformation is performed. The method was implemented as follows:
+\newline
+\begin{lstlisting}
+   if (A(k, l) != 0.0){
+        tau = (A(l,l) - A(k,k))/(2.0*A(k,l));
+
+        if(tau > 0){
+            t = 1.0/(tau + sqrt(1.0 + tau*tau));
+            //t = +tau - sqrt(1+tau*tau);
+        }
+        else{
+            t = -1.0/(-tau + sqrt(1.0 + tau*tau));
+        }
+        c = 1/(sqrt(1.0 +t*t));
+        s = c*t;
+    }
+    else{
+        c = 1.0;
+        s = 0.0;
+    }
+    double a_kk, a_ll, a_ik, a_il, r_ik, r_il;
+    a_kk = A(k,k);
+    a_ll = A(l,l);
+    A(k,k) = c*c*a_kk - 2.0*c*s*A(k,l) + s*s*a_ll;
+    A(l,l) = s*s*a_kk + 2.0*c*s*A(k,l) + c*c*a_ll;
+    A(k,l) = 0.0;  // hard-coding non-diagonal elements by hand
+    A(l,k) = 0.0;  // same here
+    for ( int i = 0; i < N+1; i++ ) {
+      if ( i != k && i != l ) {
+        a_ik = A(i,k);
+        a_il = A(i,l);
+        A(i,k) = c*a_ik - s*a_il;
+        A(k,i) = A(i,k);
+        A(i,l) = c*a_il + s*a_ik;
+        A(l,i) = A(i,l);
+      }
+      r_ik = R(i,k);
+      r_il = R(i,l);
+
+      R(i,k) = c*r_ik - s*r_il;
+      R(i,l) = c*r_il + s*r_ik;
+\end{lstlisting}
+
+\end{document}
