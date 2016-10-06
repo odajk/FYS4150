@@ -32,9 +32,12 @@ And so:
 \mathbf{w}_i^T\mathbf{w}_j  = \mathbf{v}_i^T \mathbf{v}_i=  \delta_{ij}
 \end{equation*}
 Thus, it has been proven that the dot product, and so also the orthogonality is conserved when the basis vectors $\mathbf{v}_i$ are acted on by a unitary transformation matrix. 
-\\
-\\
-Furthermore, in a unitary transformation of a matrix equation, the eigenvalues are conserved, even though the eigenvectors are changed.  In Jacobi's method, a unitary transformation matrix transforms a matrix with arbitrary elements to a diagonal matrix, so after implementing Jacobi's method, it is easy to find the eigenvalues of the original equation. A more detailed explanation is given in the lecture notes of this course\footnote{Morten Hjorth-Jensen \textit{Computational Physics: Lecture Notes Fall 2015 }, 215-218} 
+
+
+
+The purpose of the Jacobi method is to find the eigenvalues and the corresponding eigenvectors of the system. When the unitary transformation is performed, the eigenvalues and the eigenvectors of the matrix equation is conserved. The goal of the Jacobi method is to transform an arbitrary dense matrix to a diagonal matrix. Then, the diagonal elements will be the eigenvalues of the matrix equation. The same transformations are performed on the right hand side of the equations, and here we are left with the eigenvectors of the matrix.
+
+ A more detailed explanation of the Jacobi method  is given in the lecture notes of this course\footnote{Morten Hjorth-Jensen \textit{Computational Physics: Lecture Notes Fall 2015 }, 215-218} 
 \subsection{Numerical implementation}
 
 
