@@ -1,0 +1,91 @@
+
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage[utf8x]{inputenc}
+\usepackage{textcomp}
+\usepackage{caption}
+\usepackage{subcaption}
+\title{Project 4}
+\begin{document}
+\maketitle
+The energy of the simplest form of the Ising model is given by the following formula
+\begin{equation}\label{eq::energy}
+E = -J\sum_{<kl>}^{N}s_ks_l
+\end{equation}
+with $s_k = \pm 1$ represents spin up and spin down. 
+The expectation value of the energy is given by:
+\begin{equation}\label{eq::energy_exp}
+<E> = \sum_i E_i P_i(\beta)
+\end{equation}
+where $Z$ is the partition function, and $P_i(\beta)$ is the probability of energy state $E_i$. This probability is given by the following formula.
+\begin{equation}\label{eq::prob}
+P_i(\beta) = \frac{e^{-\beta E_i}}{Z}
+\end{equation} 
+The partition function is given by 
+\begin{equation}\label{eq::part_func}
+Z = \sum_{i=1}^{N} e^{-\beta E_i}
+\end{equation}
+The expectation value for the magnetic moment is given by 
+\begin{equation}\label{eq::mag_mom_exp}
+<M> = \sum_i M_i P_i(\beta)
+\end{equation}
+where $N$ is the number of states. 
+\\
+\\
+The expectation value of the absolute value of the magnetic moment is given by 
+
+\begin{equation}\label{eq::abs(mag_mom_exp)}
+<|M|> = \sum_i |M_i| P_i(\beta)
+\end{equation}
+In this project, we will use periodic boundary conditions, meaning that the spins in the end are bound to the spins in the other end. 
+
+Using (\ref{eq::energy_exp}), the expectation value of a 4 spin system can be calculated (2x2-lattice) . From the lectures, we know that the partition function for this system is given by the following:
+\begin{equation}
+Z = \sum_{i=1}^{16}e^{-\beta E_i} = 2e^{+8J\beta} + 2e^{-8J\beta} + 12 = 4\cosh(8J\beta) + 12
+\end{equation}
+The partition function can also be calculated by first calculating the energies of each of the possible states, and then using (\ref{eq::part_func}) summing over all the possible states. 
+
+The expectation value of the energy is then calculated from (\ref{eq::energy_exp}), and the following is obtained: 
+\begin{equation}
+<E> =-\frac{32\sinh(8J\beta) }{Z} 
+\end{equation}
+Next, we want to calculate the expectation value of absolute value of the magnetic moment. Using (\ref{eq::prob}) and (\ref{eq::abs(mag_mom_exp)})   we obtain 
+
+\begin{equation}
+<|M|> = \frac{8\cosh(8J\beta)+16}{Z}
+\end{equation}
+
+We also want to calculate the specific heat capacity of the system, which is given by the following general expression:
+\begin{equation}
+C_v = \frac{1}{kT^2}\frac{\partial(<E>)}{\partial\beta}
+\end{equation}
+
+This can also be written as 
+\begin{equation}
+C_v = \frac{1}{kT^2}\frac{<E^2>-<E>^2}{Z^2}
+\end{equation}
+
+The magnetic susceptibility, is defined as 
+\begin{equation}\label{eq::susc1}
+\chi = \frac{1}{kT^2}(<M^2>-<M>^2)
+\end{equation}
+
+In this case, we assume that $<M> = 0$, so we can modify (\ref{eq::susc1}) to 
+\begin{equation}
+\chi = \frac{1}{kT^2}(<M^2>)
+\end{equation}
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
