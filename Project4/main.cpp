@@ -33,9 +33,9 @@ inline int PeriodicBoundary(int i, int limit, int add) {
   return (i+limit+add) % (limit);
 }
 // Function to initialise energy and magnetization
-void InitializeLattice(int, mat &, double&, double&);
+void InitializeLattice(int, mat &, double&, double&, int);
 // The metropolis algorithm including the loop over Monte Carlo cycles
-void MetropolisSampling(int, int, double, vec &);
+void MetropolisSampling(int, int, double, vec &,int);
 // prints to file the results of the calculations
 void WriteResultstoFile(int, int, double, vec,int);
 
@@ -44,7 +44,7 @@ void WriteResultstoFile(int, int, double, vec,int);
 int main(int argc, char* argv[])
 {
   string filename;
-  int NSpins, MCcycles;
+  int NSpins, MCcycles,randomize;
   double InitialTemp, FinalTemp, TempStep;
   if (argc <= 5) {
     cout << "Bad Usage: " << argv[0] <<
@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
     InitialTemp = atof(argv[4]);
     FinalTemp = atof(argv[5]);
     TempStep = atof(argv[6]);
+    randomize = atoi(argv[7]);
   }
   // Declare new file name and add lattice size to file name
   string fileout = filename;
@@ -68,7 +69,7 @@ int main(int argc, char* argv[])
   for (double Temperature = InitialTemp; Temperature <= FinalTemp; Temperature+=TempStep){
     vec ExpectationValues = zeros<mat>(5);
     // Start Monte Carlo computation and get expectation values
-    MetropolisSampling(NSpins, MCcycles, Temperature, ExpectationValues);
+    MetropolisSampling(NSpins, MCcycles, Temperature, ExpectationValues,randomize);
     //
     //WriteResultstoFile(NSpins, MCcycles, Temperature, ExpectationValues);
   }
@@ -79,7 +80,7 @@ int main(int argc, char* argv[])
 
 
 // The Monte Carlo part with the Metropolis algo with sweeps over the lattice
-void MetropolisSampling(int NSpins, int MCcycles, double Temperature, vec &ExpectationValues)
+void MetropolisSampling(int NSpins, int MCcycles, double Temperature, vec &ExpectationValues, int randomize)
 {
   // Initialize the seed and call the Mersienne algo
   std::random_device rd;
@@ -93,7 +94,7 @@ void MetropolisSampling(int NSpins, int MCcycles, double Temperature, vec &Expec
   double MagneticMoment = 0.;
   int accepted_states = 1;
   // initialize array for expectation values
-  InitializeLattice(NSpins, SpinMatrix, Energy, MagneticMoment);
+  InitializeLattice(NSpins, SpinMatrix, Energy, MagneticMoment,randomize);
   // setup array for possible energy changes
   int counter = 99;
   vec EnergyDifference = zeros<mat>(17);
@@ -141,15 +142,18 @@ void MetropolisSampling(int NSpins, int MCcycles, double Temperature, vec &Expec
 } // end of Metropolis sampling over spins
 
 // function to initialise energy, spin matrix and magnetization
-void InitializeLattice(int NSpins, mat &SpinMatrix,  double& Energy, double& MagneticMoment)
+void InitializeLattice(int NSpins, mat &SpinMatrix,  double& Energy, double& MagneticMoment, int randomize)
 {
+  double spin_num;
+  if (randomize == 0){
   // setup spin matrix and initial magnetization
   for(int x =0; x < NSpins; x++) {
     for (int y= 0; y < NSpins; y++){
       SpinMatrix(x,y) = 1.0; // spin orientation for the ground state
       MagneticMoment +=  (double) SpinMatrix(x,y);
     }
-  }
+    }
+
   // setup initial energy
   for(int x =0; x < NSpins; x++) {
     for (int y= 0; y < NSpins; y++){
@@ -157,8 +161,38 @@ void InitializeLattice(int NSpins, mat &SpinMatrix,  double& Energy, double& Mag
     (SpinMatrix(PeriodicBoundary(x,NSpins,-1),y) +
      SpinMatrix(x,PeriodicBoundary(y,NSpins,-1)));
     }
+    }
   }
-}// end function initialise
+  else {
+      std::random_device rd;
+      std::mt19937_64 gen(rd());
+      // Set up the uniform distribution for x \in [[0, 1]
+      std::uniform_real_distribution<double> RandomNumberGenerator(0.0,1.0);
+      //generating numbers between 0 and 1. If number is smaller than 0.5 a spin down particle is generated
+      // else a sin up particle is generated
+      for(int x =0; x < NSpins; x++) {
+        for (int y= 0; y < NSpins; y++){
+            spin_num = RandomNumberGenerator(gen);
+            if (spin_num<0.5){
+                SpinMatrix(x,y) = -1.0; // spin orientation for the ground state
+            }
+            else{
+                SpinMatrix(x,y) = 1.0; // spin orientation for the ground state
+            }
+            MagneticMoment +=  (double) SpinMatrix(x,y);
+            }
+        // setup initial energy
+        for(int x =0; x < NSpins; x++) {
+          for (int y= 0; y < NSpins; y++){
+            Energy -=  (double) SpinMatrix(x,y)*
+          (SpinMatrix(PeriodicBoundary(x,NSpins,-1),y) +
+           SpinMatrix(x,PeriodicBoundary(y,NSpins,-1)));
+            }
+        }
+      }
+    }
+  }
+// end function initialise
 
 
 
