@@ -10,6 +10,7 @@
 \title{Project 4}
 \begin{document}
 \maketitle
+\section{Theory}
 The energy of the simplest form of the Ising model is given by the following formula
 \begin{equation}\label{eq::energy}
 E = -J\sum_{<kl>}^{N}s_ks_l
@@ -48,13 +49,13 @@ Z = \sum_{i=1}^{16}e^{-\beta E_i} = 2e^{+8J\beta} + 2e^{-8J\beta} + 12 = 4\cosh(
 The partition function can also be calculated by first calculating the energies of each of the possible states, and then using (\ref{eq::part_func}) summing over all the possible states. 
 
 The expectation value of the energy is then calculated from (\ref{eq::energy_exp}), and the following is obtained: 
-\begin{equation}
+\begin{equation}\label{eq::expect_energy}
 <E> =-\frac{32\sinh(8J\beta) }{Z} 
 \end{equation}
 Next, we want to calculate the expectation value of absolute value of the magnetic moment. Using (\ref{eq::prob}) and (\ref{eq::abs(mag_mom_exp)})   we obtain 
 
-\begin{equation}
-<|M|> = \frac{8\cosh(8J\beta)+16}{Z}
+\begin{equation}\label{eq::magnetization_2_by_2}
+<|M|> = \frac{8e^{8\beta J}+16}{Z}
 \end{equation}
 
 We also want to calculate the specific heat capacity of the system, which is given by the following general expression:
@@ -78,13 +79,70 @@ In this case, we assume that $<M> = 0$, so we can modify (\ref{eq::susc1}) to
 \end{equation}
 
 
+\section{Results}
+\subsection{Test case: 2x2 spin system}
+\begin{figure}[H]
+\includegraphics[scale=0.6]{figure_lattice2_nonrandom}
+\caption{This plot shows the value of the mean energy and magnetization for each spin, in a $2x2$-lattice, with temperature $T = 1$}
+\end{figure}
+
+From Figure 1, it seems like the system reaches the equilibrium state after $10^5-10^6$ Monte Carlo cycles, as this is where the values of the mean energy and magnetization seem to stabilize. 
+
+For the 2x2-spin case, the expectation value of the energy of the system is given by (\ref{eq::expect_energy}). To find the expectation value of energy per spin, we divide by 4,  the number of spins in the system. Setting $J = k = T = 1  $ we obtain 
+\begin{equation*}
+\frac{<E>}{4} = -1.99598
+\end{equation*}
+So the expectation value of energy per spin is$-1.99598$. 
+Similarly using (\ref{eq::magnetization_2_by_2}), we get 
+\begin{equation*}
+\frac{<|M|>}{4} = 0.99866
+\end{equation*}
+From Figure 1 it is seen that these values are reached after $10^5-10^6$ Monte Carlo cycles. 
+
+HER MÅ OGSÅ VARMEKAPASITET OG SUSCEBILITET
+
+\subsection{20x20 spin system}
+Now, we want to look at a bigger system with a 20x20 spin lattice. Here, we need to trust our numerical method of finding energies and magnetization as it is way to time consuming to compute this analytically.  We start first by looking at an initial lattice of all spins up ($S = +1$), and then at an initial lattice of randomized spin. 
+\subsubsection{T = 1}
+We start with a simulation of a system with temperature $T=1$
+\begin{figure}[H]
+\includegraphics[scale=0.6]{figure_lattice20_1_nonrandom}
+\caption{Initial state: All spins up}
+\end{figure}
+
+
+\begin{figure}[H]
+\includegraphics[scale=0.6]{figure_lattice_random20_1}
+\caption{Initial state: randomized spins}
+\end{figure}
+\subsubsection{T = 2.4}
+\begin{figure}[H]
+\includegraphics[scale=0.6]{figure_lattice20_24_nonrandom}
+\caption{Initial state: All spins up}
+\end{figure}
 
 
 
+\begin{figure}[H]
+\includegraphics[scale=0.6]{figure_lattice_random20_24}
+\caption{Initial state: randomized spins}
+\end{figure}
 
 
+\begin{figure}[H]
+\includegraphics[scale=0.6]{allowedconfig_per_temp}
+\caption{The number of allowed configurations as a function of temperature}
+\end{figure}
 
 
+\begin{figure}[H]
+\includegraphics[scale=0.6]{energy_prob_dist}
+\caption{The number of allowed configurations as a function of temperature}
+\end{figure}
+
+From Figure 6 it is clear that the number of allowed states increases as a the temperature increases. The number of allowed configurations grows exponentially as a function of temperature. 
+
+Figure 7 shows the 
 
 
 
